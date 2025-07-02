@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Многофункциональная трансляция</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .source-selector {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .source-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            border-color: #4ecdc4;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .ip-camera-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        input[type="text"], input[type="password"], select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .video-container {
+            position: relative;
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #videoDisplay {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            border-radius: 15px;
+        }
+
+        .placeholder {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .connect-btn:hover {
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.6);
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .status.online {
+            background: rgba(78, 205, 196, 0.3);
+            color: #4ecdc4;
+        }
+
+        .status.offline {
+            background: rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+        }
+
+        .status.connecting {
+            background: rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
+
+        .viewers-count {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 16px;
+            margin: 10px 0;
+            padding: 15px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .info-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            text-align: left;
+        }
+
+        .info-section h3 {
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .info-section li {
+            margin: 5px 0;
+            position: relative;
+        }
+
+        .info-section li:before {
+            content: "•";
+            color: #4ecdc4;
+            font-weight: bold;
+            position: absolute;
+            left: -15px;
+        }
+
+        .preset-cameras {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .preset-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .source-tabs {
+                flex-direction: column;
+            }
+            
+            .input-group {
+                max-width: 100%;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📹 Универсальная трансляция</h1>
+        
+        <div class="status offline" id="status">
+            📡 Выберите источник видео
+        </div>
+
+        <div class="source-selector">
+            <div class="source-tabs">
+                <button class="tab-btn active" onclick="switchTab('webcam')">🎥 Веб-камера</button>
+                <button class="tab-btn" onclick="switchTab('ipcam')">🌐 IP-камера</button>
+                <button class="tab-btn" onclick="switchTab('youtube')">📺 YouTube</button>
+            </div>
+
+            <!-- Веб-камера -->
+            <div id="webcam-tab" class="tab-content active">
+                <p>Используйте встроенную веб-камеру компьютера или телефона</p>
+            </div>
+
+            <!-- IP-камера -->
+            <div id="ipcam-tab" class="tab-content">
+                <div class="ip-camera-form">
+                    <div class="input-group">
+                        <label for="cameraUrl">URL камеры:</label>
+                        <input type="text" id="cameraUrl" placeholder="http://192.168.1.100:8080/video" 
+                               value="">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="cameraType">Тип камеры:</label>
+                        <select id="cameraType">
+                            <option value="mjpeg">MJPEG Stream</option>
+                            <option value="hls">HLS Stream (.m3u8)</option>
+                            <option value="direct">Прямая ссылка на видео</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="username">Логин (если нужен):</label>
+                        <input type="text" id="username" placeholder="admin">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Пароль (если нужен):</label>
+                        <input type="password" id="password" placeholder="password">
+                    </div>
+                </div>
+
+                <div class="preset-cameras">
+                    <button class="preset-btn" onclick="loadPreset('http://192.168.1.100:8080/video')">
+                        📱 Android IP Webcam<br>192.168.1.100:8080
+                    </button>
+                    <button class="preset-btn" onclick="loadPreset('http://192.168.1.101/mjpeg/1')">
+                        🏠 Домашняя камера<br>192.168.1.101
+                    </button>
+                    <button class="preset-btn" onclick="loadPreset('rtsp://192.168.1.102:554/stream')">
+                        🔒 RTSP камера<br>192.168.1.102:554
+                    </button>
+                </div>
+            </div>
+
+            <!-- YouTube -->
+            <div id="youtube-tab" class="tab-content">
+                <div class="ip-camera-form">
+                    <div class="input-group">
+                        <label for="youtubeUrl">YouTube ссылка:</label>
+                        <input type="text" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="video-container">
+            <video id="videoDisplay" autoplay muted playsinline style="display: none;">
+                Ваш браузер не поддерживает видео
+            </video>
+            <img id="imageDisplay" style="display: none; width: 100%; height: auto;">
+            <iframe id="youtubeDisplay" style="display: none; width: 100%; height: 400px; border: none;"></iframe>
+            <div id="placeholder" class="placeholder">
+                🎬 Выберите источник и нажмите "Подключиться"
+            </div>
+            <div class="viewers-count" id="viewers">
+                👥 Зрителей: <span id="viewerCount">0</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="connectBtn" class="connect-btn" onclick="connectToSource()">
+                🔗 Подключиться
+            </button>
+            <button id="disconnectBtn" onclick="disconnect()" style="display: none;">
+                ⏹️ Отключить
+            </button>
+            <button onclick="toggleFullscreen()">
+                🔍 Полный экран
+            </button>
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <div class="info-section">
+            <h3>📋 Поддерживаемые форматы:</h3>
+            <ul>
+                <li><strong>IP-камеры:</strong> MJPEG, HLS (.m3u8), прямые HTTP ссылки</li>
+                <li><strong>Android IP Webcam:</strong> http://IP:8080/video</li>
+                <li><strong>RTSP камеры:</strong> rtsp://IP:554/stream (ограниченная поддержка)</li>
+                <li><strong>YouTube:</strong> Прямые трансляции и видео</li>
+                <li><strong>Веб-камеры:</strong> Локальные USB/встроенные камеры</li>
+            </ul>
+        </div>
+
+        <div class="info-section">
+            <h3>🔧 Популярные приложения для IP-камер:</h3>
+            <ul>
+                <li><strong>Android:</strong> IP Webcam, DroidCam</li>
+                <li><strong>iPhone:</strong> EpocCam, iVCam</li>
+                <li><strong>Компьютер:</strong> OBS Studio (виртуальная камера)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let currentStream = null;
+        let currentSource = 'webcam';
+        let isConnected = false;
+        let viewerCount = 0;
+        let mjpegInterval = null;
+
+        function switchTab(tab) {
+            // Убираем активные классы
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Добавляем активные классы
+            event.target.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+            
+            currentSource = tab;
+            disconnect(); // Отключаем текущий источник
+        }
+
+        function loadPreset(url) {
+            document.getElementById('cameraUrl').value = url;
+        }
+
+        async function connectToSource() {
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const status = document.getElementById('status');
+            const errorMessage = document.getElementById('errorMessage');
+
+            try {
+                connectBtn.disabled = true;
+                status.textContent = '🔄 Подключение...';
+                status.className = 'status connecting pulse';
+                errorMessage.style.display = 'none';
+
+                if (currentSource === 'webcam') {
+                    await connectWebcam();
+                } else if (currentSource === 'ipcam') {
+                    await connectIPCamera();
+                } else if (currentSource === 'youtube') {
+                    await connectYouTube();
+                }
+
+                // Успешное подключение
+                connectBtn.style.display = 'none';
+                disconnectBtn.style.display = 'inline-block';
+                status.textContent = '🔴 В эфире';
+                status.className = 'status online pulse';
+                isConnected = true;
+
+                // Запускаем счетчик зрителей
+                viewerCount = Math.floor(Math.random() * 10) + 1;
+                updateViewers();
+
+            } catch (error) {
+                console.error('Ошибка подключения:', error);
+                showError(error.message);
+                connectBtn.disabled = false;
+                status.textContent = '❌ Ошибка подключения';
+                status.className = 'status offline';
+            }
+        }
+
+        async function connectWebcam() {
+            const video = document.getElementById('videoDisplay');
+            
+            currentStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    width: { ideal: 1280 }, 
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                }, 
+                audio: false 
+            });
+
+            video.srcObject = currentStream;
+            showElement('videoDisplay');
+        }
+
+        async function connectIPCamera() {
+            const cameraUrl = document.getElementById('cameraUrl').value.trim();
+            const cameraType = document.getElementById('cameraType').value;
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!cameraUrl) {
+                throw new Error('Введите URL камеры');
+            }
+
+            let finalUrl = cameraUrl;
+            
+            // Добавляем авторизацию если нужно
+            if (username && password) {
+                const url = new URL(cameraUrl);
+                url.username = username;
+                url.password = password;
+                finalUrl = url.toString();
+            }
+
+            if (cameraType === 'mjpeg') {
+                // MJPEG поток как изображение
+                const img = document.getElementById('imageDisplay');
+                img.src = finalUrl;
+                img.onerror = () => {
+                    throw new Error('Не удается подключиться к MJPEG потоку. Проверьте URL и доступность камеры.');
+                };
+                showElement('imageDisplay');
+                
+                // Обновляем изображение каждые 100мс для плавности
+                mjpegInterval = setInterval(() => {
+                    if (isConnected) {
+                        img.src = finalUrl + '?t=' + Date.now();
+                    }
+                }, 100);
+                
+            } else if (cameraType === 'hls') {
+                // HLS поток
+                const video = document.getElementById('videoDisplay');
+                video.src = finalUrl;
+                video.onerror = () => {
+                    throw new Error('Не удается воспроизвести HLS поток. Проверьте URL.');
+                };
+                showElement('videoDisplay');
+                
+            } else {
+                // Прямая ссылка на видео
+                const video = document.getElementById('videoDisplay');
+                video.src = finalUrl;
+                video.onerror = () => {
+                    throw new Error('Не удается воспроизвести видео. Проверьте URL и формат.');
+                };
+                showElement('videoDisplay');
+            }
+        }
+
+        async function connectYouTube() {
+            const youtubeUrl = document.getElementById('youtubeUrl').value.trim();
+            
+            if (!youtubeUrl) {
+                throw new Error('Введите ссылку на YouTube видео');
+            }
+
+            // Извлекаем ID видео
+            let videoId = '';
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = youtubeUrl.match(regExp);
+            
+            if (match && match[2].length === 11) {
+                videoId = match[2];
+            } else {
+                throw new Error('Неверная ссылка на YouTube');
+            }
+
+            const iframe = document.getElementById('youtubeDisplay');
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
+            showElement('youtubeDisplay');
+        }
+
+        function showElement(elementId) {
+            // Скрываем все элементы отображения
+            document.getElementById('videoDisplay').style.display = 'none';
+            document.getElementById('imageDisplay').style.display = 'none';
+            document.getElementById('youtubeDisplay').style.display = 'none';
+            document.getElementById('placeholder').style.display = 'none';
+            
+            // Показываем нужный элемент
+            document.getElementById(elementId).style.display = 'block';
+        }
+
+        function disconnect() {
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const status = document.getElementById('status');
+
+            // Останавливаем все потоки
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+
+            if (mjpegInterval) {
+                clearInterval(mjpegInterval);
+                mjpegInterval = null;
+            }
+
+            // Очищаем источники
+            document.getElementById('videoDisplay').srcObject = null;
+            document.getElementById('videoDisplay').src = '';
+            document.getElementById('imageDisplay').src = '';
+            document.getElementById('youtubeDisplay').src = '';
+
+            // Показываем заглушку
+            showElement('placeholder');
+
+            // Обновляем интерфейс
+            connectBtn.style.display = 'inline-block';
+            connectBtn.disabled = false;
+            disconnectBtn.style.display = 'none';
+            status.textContent = '📡 Выберите источник видео';
+            status.className = 'status offline';
+            isConnected = false;
+            viewerCount = 0;
+            document.getElementById('viewerCount').textContent = viewerCount;
+        }
+
+        function toggleFullscreen() {
+            const container = document.querySelector('.video-container');
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    console.log('Ошибка полноэкранного режима:', err);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = '❌ ' + message;
+            errorMessage.style.display = 'block';
+        }
+
+        function updateViewers() {
+            if (isConnected) {
+                viewerCount = Math.max(0, viewerCount + (Math.random() > 0.6 ? 1 : -1));
+                document.getElementById('viewerCount').textContent = viewerCount;
+                setTimeout(updateViewers, 3000);
+            }
+        }
+
+        // Автоматическая очистка при закрытии страницы
+        window.addEventListener('beforeunload', disconnect);
+    </script>
+</body>
+</html>
